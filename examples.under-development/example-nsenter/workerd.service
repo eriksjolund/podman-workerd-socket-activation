@@ -1,0 +1,66 @@
+[Unit]
+Description=workerd
+After=network.target network-online.target
+Requires=network-online.target
+
+[Unit]
+AssertPathIsDirectory=/var/srv/workerd
+AssertPathExists=/usr/local/bin/worker
+
+[Service]
+
+CapabilityBoundingSet=
+Delegate=false
+Delegate=false
+DevicePolicy=closed
+ExecStart=bash -c "cd /etc/src && exec nsenter \
+  --preserve-credentials \
+  --net=/proc/$(cat $XDG_RUNTIME_DIR/containers/networks/aardvark-dns/aardvark.pid)/ns/net \
+  --user=/proc/$(cat $XDG_RUNTIME_DIR/libpod/tmp/pause.pid)/ns/user \
+  --mount=/proc/$(cat $XDG_RUNTIME_DIR/libpod/tmp/pause.pid)/ns/mnt \
+  /usr/local/bin/workerd serve --verbose --socket-fd mySocket=3 /var/srv/workerd/config.capnp"
+Group=test
+IPAddressAllow=
+IPAddressDeny=any
+KeyringMode=private
+LockPersonality=yes
+#MemoryDenyWriteExecute=yes
+NoNewPrivileges=true
+NoNewPrivileges=yes
+PAMName=login
+PAMName=login
+PrivateDevices=yes
+PrivateNetwork=yes
+PrivateTmp=yes
+ProcSubset=pid
+ProtectClock=yes
+ProtectControlGroups=yes
+ProtectHostname=yes
+ProtectKernelLogs=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+#ProtectHome=yes
+ProtectProc=invisible
+ProtectSystem=strict
+RemoveIPC=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=mnt user net
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+SystemCallArchitectures=native
+SystemCallFilter=~@clock
+SystemCallFilter=~@debug
+SystemCallFilter=~@module
+SystemCallFilter=~@mount
+SystemCallFilter=~@privileged
+SystemCallFilter=~@reboot
+SystemCallFilter=~@resources
+SystemCallFilter=~@swap
+SystemCallFilter=~CAP_SYS_BOOT
+TimeoutStopSec=5s
+Type=exec
+UMask=0777
+User=test
+
+[Install]
+WantedBy=multi-user.target
