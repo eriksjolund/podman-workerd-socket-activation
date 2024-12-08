@@ -1,0 +1,9 @@
+[Unit]
+AssertPathIsDirectory=%h/workerd-example
+
+[Container]
+Exec=serve --socket-fd mySocket=3 /src/config.capnp
+Image=localhost/workerd
+Network=mynet.network
+Volume=%h/workerd-example:/src:Z,ro
+WorkingDir=/src
